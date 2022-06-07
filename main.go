@@ -20,26 +20,45 @@ const (
 // constraint branch-and-bound node
 // The subproblem the node represents can be calculated by applying
 // the branch type of it and its ancestors.
-type Node struct {
+type node struct {
 	kind       NodeKind
-	parent     *Node // nil if root node
+	parent     *node // nil if root node
 	lowerBound float64
 	// The following have no meaning for the root node
 	branchConstraintOne uint32
 	branchConstraintTwo uint32
 }
 
-// For printing the imlicit tree struct of Nodes
+func createRoot() *node {
+	return &node{root, nil, math.MaxFloat64, math.MaxUint32, math.MaxUint32}
+}
+
+// Branches the parent node on the two constrains to create two new Nodes
+func Branch(parent *node, lowerBound float64, branchConstraintOne uint32,
+	branchConstraintTwo uint32) (*node, *node) {
+
+	if parent == nil {
+		panic("Cannot branch nil node.")
+	}
+
+	return &node{bothBranch, parent, lowerBound, branchConstraintOne, branchConstraintTwo},
+		&node{diffBranch, parent, lowerBound, branchConstraintOne, branchConstraintTwo}
+
+}
+
+// For printing the implicit tree struct of Nodes
 type PrintNode struct {
-	node            *Node
+	referenceNode   *node
 	bothBranchChild *PrintNode
 	diffBranchChild *PrintNode
 }
 
-// returns root
-func add(pNodeByNode map[*Node]*PrintNode, node *Node) *PrintNode {
-	var prev *Node
-	curr := node
+// For the start node and its ancestors, create corresponding PrintNodes if
+// they are not already in printNodeByNode. And set the links for the PrintNodes
+// from the parent to its children.
+func add(printNodeByNode map[*node]*PrintNode, start *node) *PrintNode {
+	curr := start // curr = current
+	var prev *node
 
 	var prevPNode *PrintNode
 	var currPNode *PrintNode
@@ -49,10 +68,10 @@ func add(pNodeByNode map[*Node]*PrintNode, node *Node) *PrintNode {
 	// check for errors.
 	for curr != nil {
 		var ok bool
-		currPNode, ok = pNodeByNode[curr]
+		currPNode, ok = printNodeByNode[curr]
 		if !ok {
 			currPNode = &PrintNode{curr, nil, nil}
-			pNodeByNode[curr] = currPNode
+			printNodeByNode[curr] = currPNode
 		}
 
 		if prev != nil {
@@ -97,20 +116,20 @@ func printImpl(depth int, node *PrintNode) {
 		fmt.Printf(" ")
 	}
 
-	fmt.Printf("%+v\n", *node.node)
+	fmt.Printf("%+v\n", *node.referenceNode)
 	printImpl(depth+2, node.diffBranchChild)
 	printImpl(depth+2, node.diffBranchChild)
 
 }
 
 // For the nodes, find all ancestors and print the tree of nodes
-func printTree(nodes []*Node) {
+func printTree(nodes []*node) {
 	if len(nodes) == 0 {
 		return
 	}
 
 	var root *PrintNode
-	m := make(map[*Node]*PrintNode)
+	m := make(map[*node]*PrintNode)
 	for _, node := range nodes {
 		r := add(m, node)
 		if root != nil && r != root {
@@ -125,23 +144,29 @@ func printTree(nodes []*Node) {
 
 func main() {
 
-	var unprocessed []*Node
-	unprocessed = append(unprocessed, &Node{root, nil, math.MaxFloat64, 0, 0})
+	var unprocessed []*node
+	root := createRoot()
+	unprocessed = append(unprocessed, root)
+	k1 := &node{bothBranch, root, math.MaxFloat64, 1, 2}
+	k2 := &node{diffBranch, root, math.MaxFloat64, 1, 2}
+	unprocessed = append(unprocessed, k1)
+	unprocessed = append(unprocessed, k2)
+	k3, k4 := Branch(k2, math.MaxFloat64, 3, 4)
+	unprocessed = append(unprocessed, k3, k4)
+	// for len(unprocessed) > 0 {
 
-	for len(unprocessed) > 0 {
+	// 	node := unprocessed[0]
+	// 	unprocessed[0] = nil
+	// 	unprocessed = unprocessed[1:]
 
-		node := unprocessed[0]
-		unprocessed[0] = nil
-		unprocessed = unprocessed[1:]
+	// 	// find lb
+	// 	// check if integral soluion found
+	// 	// find branching rows/constraints
+	// 	// prune or branch
 
-		// find lb
-		// check if integral soluion found
-		// find branching rows/constraints
-		// prune or branch
+	// 		printTree([]*Node{node})
 
-		printTree([]*Node{node})
-
-	}
+	// }
 
 	printTree(unprocessed)
 }
