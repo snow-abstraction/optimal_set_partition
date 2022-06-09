@@ -6,7 +6,7 @@ import (
 
 // For printing the implicit tree struct of Nodes
 type printNode struct {
-	referenceNode   *Node
+	referenceNode   *node
 	bothBranchChild *printNode
 	diffBranchChild *printNode
 }
@@ -14,9 +14,9 @@ type printNode struct {
 // For the start node and its ancestors, create corresponding PrintNodes if
 // they are not already in printNodeByNode. And set the links for the PrintNodes
 // from the parent to its children.
-func add(printNodeByNode map[*Node]*printNode, start *Node) *printNode {
+func add(printNodeByNode map[*node]*printNode, start *node) *printNode {
 	curr := start // curr = current
-	var prev *Node
+	var prev *node
 
 	var prevPNode *printNode
 	var currPNode *printNode
@@ -82,13 +82,13 @@ func printImpl(depth int, node *printNode) {
 
 // For the nodes, find all ancestors and print the tree of nodes
 // All the supplied nodes, must have the same root.
-func PrintTree(nodes []*Node) {
+func PrintTree(nodes []*node) {
 	if len(nodes) == 0 {
 		return
 	}
 
 	var root *printNode
-	m := make(map[*Node]*printNode)
+	m := make(map[*node]*printNode)
 	for _, node := range nodes {
 		r := add(m, node)
 		if root != nil && r != root {

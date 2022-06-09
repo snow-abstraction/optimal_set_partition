@@ -16,31 +16,35 @@ const (
 	diffBranch = 2
 )
 
-// constraint branch-and-bound Node
-// The subproblem the Node represents can be calculated by applying
+// constraint branch-and-bound node
+// The subproblem the node represents can be calculated by applying
 // the branch type of it and its ancestors.
-type Node struct {
+type node struct {
 	kind       NodeKind
-	parent     *Node // nil if root node
+	parent     *node // nil if root node
 	lowerBound float64
 	// The following have no meaning for the root node
 	branchConstraintOne uint32
 	branchConstraintTwo uint32
 }
 
-func CreateRoot() *Node {
-	return &Node{root, nil, math.MaxFloat64, math.MaxUint32, math.MaxUint32}
+func createRoot() *node {
+	return &node{root, nil, math.MaxFloat64, math.MaxUint32, math.MaxUint32}
+}
+
+func CreateInitialNodes() []*node {
+	return []*node{createRoot()}
 }
 
 // Branches the parent node on the two constrains to create two new Nodes
-func Branch(parent *Node, lowerBound float64, branchConstraintOne uint32,
-	branchConstraintTwo uint32) (*Node, *Node) {
+func Branch(parent *node, lowerBound float64, branchConstraintOne uint32,
+	branchConstraintTwo uint32) (*node, *node) {
 
 	if parent == nil {
 		panic("Cannot branch nil node.")
 	}
 
-	return &Node{bothBranch, parent, lowerBound, branchConstraintOne, branchConstraintTwo},
-		&Node{diffBranch, parent, lowerBound, branchConstraintOne, branchConstraintTwo}
+	return &node{bothBranch, parent, lowerBound, branchConstraintOne, branchConstraintTwo},
+		&node{diffBranch, parent, lowerBound, branchConstraintOne, branchConstraintTwo}
 
 }

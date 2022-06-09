@@ -8,11 +8,10 @@ import (
 
 func main() {
 
-	var unprocessed []*tree.Node
-	root := tree.CreateRoot()
-	unprocessed = append(unprocessed, root)
-	k3, k4 := tree.Branch(root, math.MaxFloat64, 3, 4)
+	unprocessed := tree.CreateInitialNodes()
+	k3, k4 := tree.Branch(unprocessed[0], math.MaxFloat64, 3, 4)
 	unprocessed = append(unprocessed, k3, k4)
+
 	// for len(unprocessed) > 0 {
 
 	// 	node := unprocessed[0]
